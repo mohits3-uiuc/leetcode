@@ -1,53 +1,77 @@
 @echo off
-:: ────────────────────────────────────────────────────────────────────
+setlocal enabledelayedexpansion
+:: ──────────────────────────────────────────────────────────────────────
 ::  Mac Drive Reader – Windows Build Script
-::  Run this on a Windows machine to produce a standalone installer.
+::  Produces:  dist\MacDriveReader.exe          (single portable .exe)
+::             dist\MacDriveReader_Setup.exe    (one-click installer)
 ::
-::  Requirements:
-::    pip install pyinstaller pytsk3
-::    Inno Setup 6 installed (for the installer step)
-:: ────────────────────────────────────────────────────────────────────
+::  Requirements (all installed automatically by this script):
+::    Python 3.10+   https://www.python.org/downloads/
+::    Inno Setup 6   https://jrsoftware.org/isdl.php  (for installer step)
+:: ──────────────────────────────────────────────────────────────────────
 
-echo =================================================
-echo  Mac Drive Reader – Build
-echo =================================================
+echo.
+echo ================================================
+echo   Mac Drive Reader  –  Build
+echo ================================================
+echo.
 
-:: 1. Install dependencies
-echo [1/4] Installing Python dependencies...
-pip install -r requirements.txt
-pip install pyinstaller
+:: ── Step 1: Install Python dependencies ──────────────────────────────
+echo [1/3]  Installing Python dependencies...
+pip install --quiet --upgrade pytsk3 apfs construct pyinstaller
+if errorlevel 1 (
+    echo ERROR: pip install failed. Make sure Python is in PATH.
+    pause & exit /b 1
+)
 
-:: 2. Build the .exe with PyInstaller
-echo [2/4] Building executable with PyInstaller...
-pyinstaller --onefile ^
-            --windowed ^
-            --name "MacDriveReader" ^
-            --icon "assets\icon.ico" ^
-            --add-data "assets;assets" ^
-            main.py
+:: ── Step 2: Build single-file .exe with PyInstaller ──────────────────
+echo [2/3]  Building MacDriveReader.exe  (single file, no Python required)...
+
+:: Clean previous build
+if exist build   rmdir /s /q build
+if exist dist\MacDriveReader.exe del /q dist\MacDriveReader.exe
+
+:: Use the .spec file for a fully configured build
+pyinstaller --clean --noconfirm MacDriveReader.spec
 
 if errorlevel 1 (
     echo ERROR: PyInstaller build failed.
-    pause
-    exit /b 1
+    pause & exit /b 1
 )
-
-echo .exe created at: dist\MacDriveReader.exe
-
-:: 3. Build the Windows installer with Inno Setup (if installed)
-echo [3/4] Building Windows installer...
-set ISCC="C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-
-if exist %ISCC% (
-    %ISCC% installer.iss
-    echo Installer created at: dist\MacDriveReader_Setup.exe
-) else (
-    echo [SKIP] Inno Setup not found – skipping installer creation.
-    echo Download from: https://jrsoftware.org/isdl.php
-)
-
-echo [4/4] Done!
 echo.
+echo  Built:  dist\MacDriveReader.exe
+echo.
+
+:: ── Step 3: Build one-click Windows installer with Inno Setup ─────────
+echo [3/3]  Building one-click installer...
+
+set ISCC1="C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+set ISCC2="C:\Program Files\Inno Setup 6\ISCC.exe"
+
+if exist %ISCC1% (
+    %ISCC1% installer.iss
+) else if exist %ISCC2% (
+    %ISCC2% installer.iss
+) else (
+    echo [SKIP] Inno Setup 6 not found.
+    echo        Download from: https://jrsoftware.org/isdl.php
+    echo        Then re-run this script to generate the Setup.exe.
+    goto done
+)
+
+echo.
+echo  Built:  dist\MacDriveReader_Setup.exe
+
+:done
+echo.
+echo ================================================
+echo   Build complete!
+echo.
+echo   Portable .exe ........  dist\MacDriveReader.exe
+echo   One-click installer ..  dist\MacDriveReader_Setup.exe
+echo ================================================
+echo.
+pause
 echo Output files:
 echo   dist\MacDriveReader.exe          (standalone, no install needed)
 echo   dist\MacDriveReader_Setup.exe    (Windows installer, if Inno Setup was found)
