@@ -1,0 +1,2 @@
+# Mac Drive Reader – Python dependencies
+pytsk3
