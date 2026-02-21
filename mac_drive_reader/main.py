@@ -1,9 +1,13 @@
 """
 Mac Drive Reader for Windows
 -----------------------------
-Reads HFS+ (Mac OS Extended) drives and lets you browse / copy files to Windows.
+Reads all macOS drive formats:
+  • APFS  (Apple File System)         macOS 10.13 High Sierra and later
+  • HFS+  (Mac OS Extended)           macOS 8.1 – 12
+  • HFS   (Mac OS Standard / Classic) very old drives
+  • exFAT / FAT32 / FAT16             cross-platform USB / SD cards
 
-Dependencies: pytsk3, tkinter (built-in)
+Dependencies: pytsk3, apfs, tkinter (built-in)
 """
 
 import os
@@ -21,12 +25,12 @@ try:
 except ImportError:
     TSK_AVAILABLE = False
 
-# ── Try to import the HFS reader ───────────────────────────────
+# ── Try to import the unified Mac FS reader ────────────────────
 try:
-    from hfs_reader import HFSReader
-    HFS_AVAILABLE = True
+    from mac_fs_reader import MacFSReader
+    FS_AVAILABLE = True
 except ImportError:
-    HFS_AVAILABLE = False
+    FS_AVAILABLE = False
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -91,7 +95,7 @@ class MacDriveReaderApp(tk.Tk):
         self.minsize(800, 500)
         self.configure(bg="#1e1e2e")
 
-        self.reader = None          # HFSReader instance
+        self.reader = None          # MacFSReader instance
         self.current_path = "/"    # current browsed path
         self._node_map = {}         # treeview node → virtual path
 
@@ -220,7 +224,10 @@ class MacDriveReaderApp(tk.Tk):
         path = filedialog.askopenfilename(
             title="Select macOS Disk Image",
             filetypes=[
-                ("Disk images", "*.dmg *.img *.iso *.dd"),
+                ("Disk images", "*.dmg *.img *.iso *.dd *.raw *.bin"),
+                ("DMG files", "*.dmg"),
+                ("Raw images", "*.img *.raw *.bin *.dd"),
+                ("ISO images", "*.iso"),
                 ("All files", "*.*")
             ]
         )
@@ -264,7 +271,7 @@ class MacDriveReaderApp(tk.Tk):
         ttk.Button(win, text="Open (read-only)", command=confirm).pack(pady=8)
 
     def _load_drive(self, path):
-        if not HFS_AVAILABLE or not TSK_AVAILABLE:
+        if not FS_AVAILABLE or not TSK_AVAILABLE:
             messagebox.showerror(
                 "Missing Dependency",
                 "pytsk3 is required.\n\nInstall it with:\n  pip install pytsk3"
@@ -277,7 +284,7 @@ class MacDriveReaderApp(tk.Tk):
 
         def task():
             try:
-                reader = HFSReader(path)
+                reader = MacFSReader.open(path)
                 self.reader = reader
                 self.after(0, lambda: self._populate_tree(reader))
                 self.after(0, lambda: self._show_drive_info(reader))

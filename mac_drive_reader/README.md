@@ -1,24 +1,38 @@
 # Mac Drive Reader for Windows
 
-A Windows GUI application to **read HFS+ (Mac OS Extended) drives** on Windows — similar to MacDrive.
+A Windows GUI application to **read all macOS-formatted drives** on Windows — similar to MacDrive.
 
 Connect a Mac-formatted external drive to your Windows PC and browse, view, and copy files from it.
 
 ---
 
+## Supported Filesystem Formats
+
+| Format | Description | Mac / Device versions |
+|---|---|---|
+| **APFS** | Apple File System | macOS 10.13 High Sierra (2017) and later; all modern Macs / SSDs |
+| **HFS+** | Mac OS Extended (Journaled) | macOS 8.1 – macOS 12; most older external drives |
+| **HFS** | Mac OS Standard (Classic) | Very old drives, pre-HFS+ |
+| **exFAT** | Cross-platform | USB sticks, SD cards formatted on any macOS |
+| **FAT32 / FAT16** | Cross-platform | Older USB/SD devices formatted on macOS |
+
+Filesystem type is **auto-detected** — just open the drive and the app figures out the format.
+
+---
+
 ## Features
 
-- 📂 Browse the full folder/file tree of any HFS+ drive
+- 📂 Browse the full folder/file tree of **any Mac-formatted drive**
 - 📋 Copy individual files or entire folders to Windows
 - 🔍 View file metadata (size, dates, permissions)
-- 💽 Works with physical drives AND disk image files (`.dmg`, `.img`, `.dd`)
+- 💽 Works with physical drives AND disk image files (`.dmg`, `.img`, `.dd`, `.raw`, `.iso`)
 - 🖥️ Clean dark-themed GUI
 - ⚡ Background loading — UI stays responsive
 
 ## Limitations
 
-- **Read-only** — writing back to HFS+ drives is not supported
-- **HFS+ only** — APFS drives (formatted on macOS 10.13+) are not supported in this version
+- **Read-only** — writing back to Mac drives is not supported
+- **APFS write support** requires the `apfs` Python library (`pip install apfs`)
 - Requires running as **Administrator** to access physical drives
 
 ---
@@ -31,6 +45,8 @@ Connect a Mac-formatted external drive to your Windows PC and browse, view, and 
 |---|---|
 | Python 3.10+ | https://www.python.org/downloads/ |
 | pytsk3 | `pip install pytsk3` |
+| apfs | `pip install apfs` (needed for APFS drives) |
+| construct | `pip install construct` (dependency of apfs) |
 | PyInstaller (to build .exe) | `pip install pyinstaller` |
 | Inno Setup 6 (to build installer) | https://jrsoftware.org/isdl.php |
 
@@ -92,7 +108,8 @@ Plug in the Mac-formatted USB drive or external hard drive to your Windows PC.
 ```
 mac_drive_reader/
 ├── main.py           ← GUI application (tkinter)
-├── hfs_reader.py     ← HFS+ filesystem reader (pytsk3)
+├── mac_fs_reader.py  ← Unified reader (APFS, HFS+, HFS, exFAT, FAT32)
+├── hfs_reader.py     ← Legacy HFS+ reader (kept for compatibility)
 ├── requirements.txt  ← Python dependencies
 ├── build.bat         ← Build script (Windows) → produces .exe + installer
 ├── installer.iss     ← Inno Setup script → produces Setup.exe
@@ -107,7 +124,9 @@ mac_drive_reader/
 | Problem | Fix |
 |---|---|
 | `ModuleNotFoundError: pytsk3` | Run `pip install pytsk3` |
-| "Could not find HFS+ partition" | The drive may be APFS (not supported). Check if it was formatted as Mac OS Extended |
+| `ModuleNotFoundError: apfs` | Run `pip install apfs` (needed for APFS drives) |
+| "APFS support requires the 'apfs' package" | Run `pip install apfs construct` |
+| "Could not open the filesystem" | Drive may use an unsupported partition scheme; try a disk image instead |
 | Drive not listed | Run as Administrator |
 | Files copy with garbled names | Use UTF-8 filenames. Non-ASCII characters may need manual renaming on Windows |
 | App crashes on open | Make sure drive is fully connected and not being scanned by antivirus |
@@ -116,7 +135,9 @@ mac_drive_reader/
 
 ## Technical Details
 
-- Uses **pytsk3** (Python bindings for [The Sleuth Kit](https://www.sleuthkit.org/)) for HFS+ parsing
-- Supports both GPT and MBR partition tables to auto-detect the HFS+ partition
-- File reading via `TSK_FS_TYPE_HFS` — same engine used by forensic tools
+- **APFS** — parsed via the `apfs` Python library (pure-Python), with pytsk3 as a fallback
+- **HFS+ / HFS** — parsed via `pytsk3` (Python bindings for [The Sleuth Kit](https://www.sleuthkit.org/))
+- **exFAT / FAT32** — parsed via `pytsk3` with FAT auto-detection
+- Filesystem type is **auto-probed** by reading the first 4 KB of the disk/image
+- Supports GPT and MBR partition tables to locate the correct filesystem partition
 - GUI built with Python's built-in **tkinter** (no extra GUI frameworks needed)

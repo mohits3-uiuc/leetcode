@@ -1,2 +1,4 @@
 # Mac Drive Reader – Python dependencies
-pytsk3
+pytsk3        # The Sleuth Kit bindings (HFS+, HFS, FAT, exFAT)
+apfs          # Pure-Python APFS parser (Apple File System)
+construct     # Binary parsing (used by the apfs library)
