@@ -1,0 +1,21 @@
+employee_id,name,department,salary,age,join_date,location
+101,John Smith,Engineering,95000,32,2019-03-15,San Francisco
+102,Sarah Johnson,Marketing,75000,28,2020-06-01,New York
+103,Michael Brown,Engineering,105000,35,2018-01-20,San Francisco
+104,Emily Davis,Sales,68000,29,2021-02-10,Chicago
+105,David Wilson,Engineering,88000,31,2019-11-05,Seattle
+106,Jessica Martinez,HR,72000,27,2020-08-22,New York
+107,Robert Taylor,Sales,82000,33,2019-05-18,Chicago
+108,Linda Anderson,Marketing,79000,30,2020-03-12,Boston
+109,James Thomas,Engineering,98000,34,2018-09-08,San Francisco
+110,Patricia Jackson,Finance,91000,36,2017-12-01,New York
+111,Christopher White,Sales,71000,26,2021-07-15,Miami
+112,Jennifer Harris,Engineering,102000,38,2016-04-25,Seattle
+113,Matthew Clark,Marketing,76000,29,2020-10-30,Boston
+114,Amanda Lewis,HR,69000,25,2021-09-01,Austin
+115,Daniel Robinson,Finance,94000,37,2017-06-14,New York
+116,Michelle Walker,Sales,77000,28,2020-12-05,Chicago
+117,Joseph Hall,Engineering,99000,33,2018-11-20,San Francisco
+118,Elizabeth Allen,Marketing,81000,31,2019-07-08,Los Angeles
+119,Ryan Young,Finance,89000,35,2018-02-28,New York
+120,Karen King,HR,73000,27,2021-01-18,Austin

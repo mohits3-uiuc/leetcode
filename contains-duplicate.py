@@ -1,3 +1,11 @@
+# ============================================================================
+# CONTAINS DUPLICATE PROBLEM
+# ============================================================================
+# The question is simply: "Have I seen this number before?"
+# 
+# So the best approach is to remember what you've already seen using a set.
+# ============================================================================
+
 nums = [1, 2, 3, 4, 5]
 
 ## Method 1 Ways to do for loop
